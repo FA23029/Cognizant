@@ -1,0 +1,250 @@
+Exercise 1: Implementing the Singleton Pattern
+This implementation uses the thread-safe, lazy-initialization approach with double-checked locking to ensure that 
+only one instance of the Logger exists, even in multi-threaded environments.
+
+Define the Singleton Class (Logger.java)
+Java
+package com.example.singleton;
+
+public class Logger {
+    // 1. Private static instance of itself (volatile ensures thread visibility)
+    private static volatile Logger instance;
+
+    // 2. Private constructor to prevent instantiation from other classes
+    private Logger() {
+        // Prevent reflection from breaking the singleton
+        if (instance != null) {
+            throw new RuntimeException("Use getInstance() method to get the single instance of this class.");
+        }
+    }
+
+    // 3. Public static method to get the instance
+    public static Logger getInstance() {
+        if (instance == null) { // First check (no locking)
+            synchronized (Logger.class) {
+                if (instance == null) { // Second check (with locking)
+                    instance = new Logger();
+                }
+            }
+        }
+        return instance;
+    }
+
+    // A sample logging method
+    public void log(String message) {
+        System.out.println("[LOG] " + message);
+    }
+}
+
+
+2. Test the Singleton Implementation (SingletonTest.java)
+Java
+package com.example.singleton;
+
+public class SingletonTest {
+    public static void main(String[] args) {
+        // Attempt to get two separate instances of the Logger
+        Logger logger1 = Logger.getInstance();
+        Logger logger2 = Logger.getInstance();
+
+        // Log messages using both references
+        logger1.log("This is the first log message.");
+        logger2.log("This is the second log message.");
+
+        // Verify that both variables point to the exact same memory instance
+        System.out.println("\n--- Verification ---");
+        System.out.println("Logger 1 Hashcode: " + logger1.hashCode());
+        System.out.println("Logger 2 Hashcode: " + logger2.hashCode());
+
+        if (logger1 == logger2) {
+            System.out.println("SUCCESS: Both variables point to the same instance. Singleton pattern works perfectly!");
+        } else {
+            System.out.println("FAILURE: Instances are different.");
+        }
+    }
+}
+
+OUTPUTS:
+
+Windows PowerShell
+Copyright (C) Microsoft Corporation. All rights reserved.
+
+PS C:\Users\Workspace\SingletonPatternExample>  & 'C:\Program Files\Java\jdk-21\bin\java.exe' '-XX:+ShowCodeDetailsInExceptionMessages' '-cp' 'C:\Users\Workspace\SingletonPatternExample\bin' 'com.example.singleton.SingletonTest'
+
+[LOG] This is the first log message.
+[LOG] This is the second log message.
+
+--- Verification ---
+Logger 1 Hashcode: 1555845260
+Logger 2 Hashcode: 1555845260
+
+SUCCESS: Both variables point to the same instance. Singleton pattern works perfectly!
+PS C:\Users\Workspace\SingletonPatternExample>
+
+
+
+
+
+
+
+
+
+
+
+Exercise 2: Implementing the Factory Method Pattern
+This pattern decouples the creation logic from the actual client code by using a factory hierarchy.
+
+1. Define the Product Interface (Document.java)
+Java
+package com.example.factory;
+
+public interface Document {
+    void open();
+    void close();
+}S
+
+
+2. Create Concrete Product Classes
+WordDocument.java
+Java
+package com.example.factory;
+
+public class WordDocument implements Document {
+    @Override
+    public void open() {
+        System.out.println("Opening Word Document (.docx)...");
+    }
+
+    @Override
+    public void close() {
+        System.out.println("Closing Word Document.");
+    }
+}
+PdfDocument.java
+Java
+package com.example.factory;
+
+public class PdfDocument implements Document {
+    @Override
+    public void open() {
+        System.out.println("Opening PDF Document (.pdf)...");
+    }
+
+    @Override
+    public void close() {
+        System.out.println("Closing PDF Document.");
+    }
+}
+ExcelDocument.java
+Java
+package com.example.factory;
+
+public class ExcelDocument implements Document {
+    @Override
+    public void open() {
+        System.out.println("Opening Excel Document (.xlsx)...");
+    }
+
+    @Override
+    public void close() {
+        System.out.println("Closing Excel Document.");
+    }
+}
+
+
+
+
+3. Implement the Factory Hierarchy
+DocumentFactory.java (Abstract Creator)
+Java
+package com.example.factory;
+
+public abstract class DocumentFactory {
+    // The Factory Method
+    public abstract Document createDocument();
+
+    // Factories can also contain core business logic that relies on the product
+    public void processDocument() {
+        Document doc = createDocument();
+        doc.open();
+        // Perform operations...
+        doc.close();
+    }
+}
+Concrete Factories
+Java
+package com.example.factory;
+
+// Word Factory
+class WordDocumentFactory extends DocumentFactory {
+    @Override
+    public Document createDocument() {
+        return new WordDocument();
+    }
+}
+
+// PDF Factory
+class PdfDocumentFactory extends DocumentFactory {
+    @Override
+    public Document createDocument() {
+        return new PdfDocument();
+    }
+}
+
+// Excel Factory
+class ExcelDocumentFactory extends DocumentFactory {
+    @Override
+    public Document createDocument() {
+        return new ExcelDocument();
+    }
+}
+
+
+
+4. Test the Factory Method Implementation (FactoryMethodTest.java)
+Java
+package com.example.factory;
+
+public class FactoryMethodTest {
+    public static void main(String[] args) {
+        // Create the factories
+        DocumentFactory wordFactory = new WordDocumentFactory();
+        DocumentFactory pdfFactory = new PdfDocumentFactory();
+        DocumentFactory excelFactory = new ExcelDocumentFactory();
+
+        System.out.println("--- Testing Word Factory ---");
+        Document wordDoc = wordFactory.createDocument();
+        wordDoc.open();
+        wordDoc.close();
+
+        System.out.println("\n--- Testing PDF Factory ---");
+        Document pdfDoc = pdfFactory.createDocument();
+        pdfDoc.open();
+        pdfDoc.close();
+
+        System.out.println("\n--- Testing Excel Factory (Using Template Method) ---");
+        // Using the built-in process method to show standard factory usage
+        excelFactory.processDocument();
+    }
+}
+
+
+
+OUTPUT:
+Windows PowerShell
+Copyright (C) Microsoft Corporation. All rights reserved.
+
+PS C:\Users\Workspace\FactoryMethodPatternExample>  & 'C:\Program Files\Java\jdk-21\bin\java.exe' '-XX:+ShowCodeDetailsInExceptionMessages' '-cp' 'C:\Users\Workspace\FactoryMethodPatternExample\bin' 'com.example.factory.FactoryMethodTest'
+
+--- Testing Word Factory ---
+Opening Word Document (.docx)...
+Closing Word Document.
+
+--- Testing PDF Factory ---
+Opening PDF Document (.pdf)...
+Closing PDF Document.
+
+--- Testing Excel Factory (Using Template Method) ---
+Opening Excel Document (.xlsx)...
+Closing Excel Document.
+PS C:\Users\Workspace\FactoryMethodPatternExample>
