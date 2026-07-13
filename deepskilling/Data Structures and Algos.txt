@@ -1,0 +1,211 @@
+Exercise 2: E-commerce Platform Search Function1. 
+
+Understanding Asymptotic NotationBig O Notation: 
+It is a mathematical notation used to describe the upper bound of an algorithm's 
+execution time or space requirements in the worst-case scenario. 
+It focuses on the growth rate of the execution time relative to the input size ($n$), 
+ignoring constants and lower-order terms. This allows developers to evaluate how an 
+algorithm will scale as data grows.Scenarios for Search Operations:Best-Case: 
+The target element is found on the very first check 
+(e.g., the first element in a linear search or the exact middle element in a binary search). 
+Time complexity is $O(1)$.Average-Case: The target element is located somewhere in the 
+middle of the data set. On average, a linear search checks $\frac{n}{2}$ elements, 
+while a binary search takes $\approx \log_2(n)$ steps.Worst-Case: 
+The target element is at the very end of the data structure, or not present at all. 
+Linear search must inspect all $n$ items ($O(n)$), while binary search continuously halves 
+the search space ($O(\log n)$).2. Implementation (ProductSearch.java)Javapackage 
+com.example.search;
+
+import java.util.Arrays;
+import java.util.Comparator;
+
+class Product {
+    int productId;
+    String productName;
+    String category;
+
+    public Product(int productId, String productName, String category) {
+        this.productId = productId;
+        this.productName = productName;
+        this.category = category;
+    }
+
+    @Override
+    public String toString() {
+        return "Product{" + "id=" + productId + ", name='" + productName + '\'' + ", category='" + category + '\'' + '}';
+    }
+}
+
+public class ProductSearch {
+
+    // Linear Search Implementation
+    public static Product linearSearch(Product[] products, int targetId) {
+        for (Product product : products) {
+            if (product.productId == targetId) {
+                return product; // Found
+            }
+        }
+        return null; // Not found
+    }
+
+    // Binary Search Implementation (Assumes array is sorted by productId)
+    public static Product binarySearch(Product[] products, int targetId) {
+        int left = 0;
+        int right = products.length - 1;
+
+        while (left <= right) {
+            int mid = left + (right - left) / 2;
+
+            if (products[mid].productId == targetId) {
+                return products[mid]; // Found
+            }
+            if (products[mid].productId < targetId) {
+                left = mid + 1; // Search right half
+            } else {
+                right = mid - 1; // Search left half
+            }
+        }
+        return null; // Not found
+    }
+
+    public static void main(String[] args) {
+        // Setup raw unsorted data
+        Product[] products = {
+            new Product(105, "Wireless Mouse", "Electronics"),
+            new Product(101, "Mechanical Keyboard", "Electronics"),
+            new Product(108, "Gaming Monitor", "Electronics"),
+            new Product(103, "USB-C Cable", "Accessories")
+        };
+
+        System.out.println("--- Testing Linear Search (Unsorted Array) ---");
+        Product res1 = linearSearch(products, 108);
+        System.out.println("Searched for ID 108: " + (res1 != null ? res1 : "Not Found"));
+
+        // Setup for Binary Search (Array MUST be sorted)
+        Product[] sortedProducts = Arrays.copyOf(products, products.length);
+        Arrays.sort(sortedProducts, Comparator.comparingInt(p -> p.productId));
+
+        System.out.println("\n--- Testing Binary Search (Sorted Array) ---");
+        Product res2 = binarySearch(sortedProducts, 108);
+        System.out.println("Searched for ID 108: " + (res2 != null ? res2 : "Not Found"));
+    }
+}
+
+
+OUTPUTS:
+
+VS Code Terminal OutputPlaintext
+PS C:\Users\Workspace\ECommercePlatformSearch>  & 'C:\Program Files\Java\jdk-21\bin\java.exe' '-cp' 'C:\Users\Workspace\ECommercePlatformSearch\bin' 'com.example.search.ProductSearch'
+
+--- Testing Linear Search (Unsorted Array) ---
+Searched for ID 108: Product{id=108, name='Gaming Monitor', category='Electronics'}
+
+--- Testing Binary Search (Sorted Array) ---
+Searched for ID 108: Product{id=108, name='Gaming Monitor', category='Electronics'}
+
+
+3. AnalysisComplexity 
+Comparison:Linear Search: Worst-case time complexity is $O(n)$.
+ It does not require sorted data.Binary Search: Worst-case time complexity is $O(\log n)$.
+ It scales exceptionally well for large datasets but requires the data to be sorted upfront
+ ($O(n \log n)$ operation).E-Commerce Platform Suitability: Binary Search 
+(or index-based lookups like Hashing) is far superior for an e-commerce platform. 
+Catalog search requests happen continuously, while product inventory changes relatively
+ infrequently. Sorting the product list once (or keeping it naturally sorted in a database 
+index) pays off heavily because every subsequent search takes logarithmic time ($O(\log n)$) 
+rather than scanning millions of rows line-by-line.
+
+
+
+Exercise 7: Financial Forecasting1. 
+
+Understanding Recursive AlgorithmsRecursion: A programming technique where a method calls 
+itself to solve smaller sub-instances of the same problem. Every recursive function requires 
+a base case to terminate execution and prevent an infinite loop (which leads to a 
+StackOverflowError), and a recursive case that transitions towards the base case. 
+It simplifies complex algorithmic structures like tree traversals and mathematical 
+recurrence reslations.
+
+
+2. Implementation & Optimization (FinancialForecasting.java)This
+ code implements both the naive recursive solution and an optimized memoization approach 
+to showcase how to eliminate excessive computations.Javapackage com.example.finance;
+
+import java.util.HashMap;
+import java.util.Map;
+
+public class FinancialForecasting {
+
+    // 1. Standard Recursive Approach
+    // Formula: FV = PV * (1 + growthRate)^years -> modeled recursively
+    public static double calculateFutureValue(double presentValue, double growthRate, int years) {
+        // Base Case
+        if (years == 0) {
+            return presentValue;
+        }
+        // Recursive Case
+        return (1 + growthRate) * calculateFutureValue(presentValue, growthRate, years - 1);
+    }
+
+    // 2. Optimized Recursive Approach using Memoization (Top-Down Dynamic Programming)
+    private static Map<Integer, Double> memo = new HashMap<>();
+
+    public static double calculateFutureValueOptimized(double presentValue, double growthRate, int years) {
+        if (years == 0) {
+            return presentValue;
+        }
+        // Check if value was already computed previously
+        if (memo.containsKey(years)) {
+            return memo.get(years);
+        }
+
+        double result = (1 + growthRate) * calculateFutureValueOptimized(presentValue, growthRate, years - 1);
+        memo.put(years, result); // Cache the result
+        return result;
+    }
+
+    public static void main(String[] args) {
+        double initialInvestment = 1000.0; // $1,000
+        double annualGrowthRate = 0.05;    // 5% growth
+        int forecastingPeriod = 10;        // 10 years
+
+        System.out.println("--- Executing Naive Financial Forecasting ---");
+        double futureValue = calculateFutureValue(initialInvestment, annualGrowthRate, forecastingPeriod);
+        System.out.printf("Value after %d years: $%.2f%n", forecastingPeriod, futureValue);
+
+        System.out.println("\n--- Executing Optimized Financial Forecasting ---");
+        memo.clear(); // Clear cache before running
+        double optimizedValue = calculateFutureValueOptimized(initialInvestment, annualGrowthRate, forecastingPeriod);
+        System.out.printf("Value after %d years (Optimized): $%.2f%n", forecastingPeriod, optimizedValue);
+    }
+}
+
+
+OUTPUTS:
+
+VS Code Terminal OutputPlaintextPS C:\Users\Workspace\FinancialForecastingExample>  & 'C:\Program Files\Java\jdk-21\bin\java.exe' '-cp' 'C:\Users\Workspace\FinancialForecastingExample\bin' 'com.example.finance.FinancialForecasting'
+
+--- Executing Naive Financial Forecasting ---
+Value after 10 years: $1628.89
+
+--- Executing Optimized Financial Forecasting ---
+Value after 10 years (Optimized): $1628.89
+
+
+
+
+3. AnalysisTime Complexity of the Naive Recursive Algorithm: 
+Because each recursive step reduces the problem size by exactly 1 (years - 1) and 
+does a single multiplication step, the call stack will be invoked $n$ times where $n$ 
+is the number of years. Hence, the time complexity is linear, or $O(n)$. 
+Space complexity is also $O(n)$ due to the call stack size.How to Optimize
+ Excess Computation:While a single-branch recurrence like $FV = FV_{n-1} \times 
+(1+r)$ runs fast, recursive implementations of multi-branch relationships
+ (like the Fibonacci sequence) create an exponential $O(2^n)$ overhead because the 
+exact same sub-problems are computed over and over.Memoization (Top-Down): 
+Store the results of expensive recursive functions in a data structure 
+(like a HashMap or an array). Before executing a computation, check the cache. 
+If it exists, return it instantly to cut off entire branches of computation.
+Iterative Conversion (Bottom-Up): Convert the algorithm to a simple loop. 
+Iteration completely eliminates the recursive function call stack overhead, 
+dropping the space complexity from $O(n)$ down to a highly optimized $O(1)$.
